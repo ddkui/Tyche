@@ -1,15 +1,17 @@
-# hedgefunding
+# Quorum
 
 An AI hedge fund research project, built on existing open-source tools
-rather than from scratch. Equities-first, multi-asset architecture, tuned
-for a shorter holding period (swing-trade horizon: days to a couple weeks)
-rather than day-trading or buy-and-hold. Paper/backtest only right now —
-no live execution is wired in yet.
+rather than from scratch. Named for the shape of its decision engine: a
+quorum of analyst/researcher/risk/portfolio-manager agents that has to
+agree before a trade happens. Equities-first, multi-asset architecture,
+tuned for a shorter holding period (swing-trade horizon: days to a couple
+weeks) rather than day-trading or buy-and-hold. Paper/backtest only right
+now — no live execution is wired in yet.
 
 ## Architecture
 
 ```
-hedgefund/
+quorum/
   config.py       Holding-period + risk-limit defaults (our own layer;
                    upstream has no opinion on either)
   data/
@@ -55,8 +57,8 @@ is explicit: it scores a *rating* against realized/alpha return per
 (ticker, date) cell, and is deliberately not a portfolio simulator — "must
 not grow one," in its own words. That's the right scope for their project.
 It means holding periods, position sizing, and P&L are a layer we have to
-own, which is what `hedgefund/backtest/portfolio.py` and
-`hedgefund/risk/gate.py` are.
+own, which is what `quorum/backtest/portfolio.py` and
+`quorum/risk/gate.py` are.
 
 ## Setup
 

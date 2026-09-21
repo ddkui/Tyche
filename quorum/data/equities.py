@@ -30,7 +30,7 @@ def get_price_history(
 
     Returned frame is adjusted-close by the provider's own convention;
     callers doing PIT-sensitive work should check
-    ``hedgefund.backtest.validators.check_adjustment_convention``.
+    ``quorum.backtest.validators.check_adjustment_convention``.
     """
     result = obb.equity.price.historical(
         symbol=symbol,
@@ -56,7 +56,7 @@ def get_filings(symbol: str, provider: str = "sec", limit: int = 50) -> pd.DataF
     """SEC filings with their actual public filing date.
 
     This is the timestamp that matters for PIT correctness — see
-    ``check_no_filing_leakage`` in ``hedgefund.backtest.validators``.
+    ``check_no_filing_leakage`` in ``quorum.backtest.validators``.
     The fiscal period a filing covers is not the date it became public.
     """
     result = obb.equity.fundamental.filings(symbol=symbol, provider=provider, limit=limit)

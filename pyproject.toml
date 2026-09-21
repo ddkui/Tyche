@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "hedgefunding"
+name = "quorum"
 version = "0.1.0"
-description = "Multi-asset AI hedge fund research project. Equities first."
+description = "Quorum: an AI hedge fund research project. Multi-asset architecture, equities first."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -22,7 +22,7 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["hedgefund*"]
+include = ["quorum*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

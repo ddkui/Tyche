@@ -4,8 +4,8 @@ TradingAgents' own ``tradingagents/backtest.py`` deliberately stops at
 scoring a rating against realized/alpha return per (ticker, date) cell — its
 own docstring says explicitly it is not a portfolio simulator and "must not
 grow one." This module is the layer upstream intentionally left out: entry
-sizing (via ``hedgefund.risk.gate``), a holding-period exit rule (via
-``hedgefund.config.HoldingPeriodConfig``), and a resulting trade log/equity
+sizing (via ``quorum.risk.gate``), a holding-period exit rule (via
+``quorum.config.HoldingPeriodConfig``), and a resulting trade log/equity
 curve.
 
 Driven one trading day at a time via ``run_day`` — the caller (a backtest
@@ -19,9 +19,9 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from hedgefund.config import DEFAULT_HOLDING_PERIOD, DEFAULT_RISK_LIMITS, HoldingPeriodConfig, RiskLimits
-from hedgefund.decision.engine import Decision
-from hedgefund.risk.gate import RiskGate
+from quorum.config import DEFAULT_HOLDING_PERIOD, DEFAULT_RISK_LIMITS, HoldingPeriodConfig, RiskLimits
+from quorum.decision.engine import Decision
+from quorum.risk.gate import RiskGate
 
 
 @dataclass

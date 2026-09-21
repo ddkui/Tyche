@@ -1,7 +1,7 @@
 """Deterministic risk gate: sits between a Decision and an order.
 
 Every check here is a plain arithmetic comparison against
-``hedgefund.config.RiskLimits``. Nothing here reads the LLM's rationale or
+``quorum.config.RiskLimits``. Nothing here reads the LLM's rationale or
 confidence — a decision that argued its way past a limit is still rejected
 the same as one with no argument at all. That's the point: conviction is not
 a risk parameter.
@@ -12,7 +12,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-from hedgefund.config import DEFAULT_RISK_LIMITS, RiskLimits
+from quorum.config import DEFAULT_RISK_LIMITS, RiskLimits
 
 
 @dataclass(frozen=True)

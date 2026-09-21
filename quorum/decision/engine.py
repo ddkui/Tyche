@@ -9,7 +9,7 @@ decision to do nothing, it's a run that needs a human or a re-run. See
 
 The trader agent also proposes an entry price / stop-loss / position size,
 but those are advisory LLM output, not enforced limits. Our own
-``hedgefund.risk.gate`` and ``hedgefund.config`` are the actual authority on
+``quorum.risk.gate`` and ``quorum.config`` are the actual authority on
 position size and exit rules — the LLM proposes, the deterministic gate
 disposes.
 """
