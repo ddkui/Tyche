@@ -20,6 +20,10 @@ import streamlit as st
 from quorum.backtest.runner import RunConfig, run_backtest
 from quorum.config import DEFAULT_HOLDING_PERIOD, DEFAULT_RISK_LIMITS, HoldingPeriodConfig, RiskLimits
 from quorum.dashboard.data import compare_runs, list_run_dirs, load_run
+from quorum.personas.curated import CURATED_SLUGS
+from quorum.personas.source import resolve_source_dir
+
+NO_PERSONA = "(none — upstream default prompts)"
 
 st.set_page_config(page_title="Quorum backtests", layout="wide")
 st.title("Quorum — backtest dashboard")
@@ -66,6 +70,28 @@ with st.sidebar:
         value=DEFAULT_RISK_LIMITS.daily_loss_kill_switch_pct,
     )
 
+    st.subheader("Persona (optional)")
+    try:
+        resolve_source_dir()
+        personas_available = True
+    except FileNotFoundError:
+        personas_available = False
+        st.caption(
+            "investorskills checkout not found — run "
+            "`git submodule update --init` to enable personas."
+        )
+    persona_choice = st.selectbox(
+        "Investor persona for the bull/bear debate",
+        [NO_PERSONA, *CURATED_SLUGS],
+        disabled=not personas_available,
+        help=(
+            "Prepends the selected investor's framework (from investorskills) "
+            "into TradingAgents' bull/bear researcher prompts. Curated list is "
+            "pre-filtered for equities + a swing-trade horizon — see "
+            "quorum/personas/curated.py."
+        ),
+    )
+
     run_clicked = st.button("Run backtest", type="primary")
 
 if run_clicked:
@@ -93,6 +119,7 @@ if run_clicked:
                 max_sector_exposure_pct=DEFAULT_RISK_LIMITS.max_sector_exposure_pct,
                 daily_loss_kill_switch_pct=daily_kill_switch_pct,
             ),
+            persona_slug=None if persona_choice == NO_PERSONA else persona_choice,
         )
         with st.spinner(f"Running backtest over {len(tickers)} ticker(s)... this calls an LLM per decision."):
             try:

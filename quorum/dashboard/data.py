@@ -85,6 +85,7 @@ def compare_runs(run_dirs: list[Path]) -> pd.DataFrame:
                 "tickers": ", ".join(run.config.get("tickers", [])),
                 "start_date": run.config.get("start_date"),
                 "end_date": run.config.get("end_date"),
+                "persona": run.config.get("persona_slug") or "-",
                 **metrics,
                 **trade_stats,
             }

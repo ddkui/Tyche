@@ -17,6 +17,8 @@ from quorum.backtest.portfolio import PortfolioSimulator
 from quorum.config import DEFAULT_HOLDING_PERIOD, DEFAULT_RISK_LIMITS, HoldingPeriodConfig, RiskLimits
 from quorum.data.equities import get_price_history
 from quorum.decision.engine import DecisionEngine
+from quorum.personas.models import load_persona
+from quorum.personas.source import resolve_source_dir
 
 RESULTS_DIR = Path("results/runs")
 
@@ -37,6 +39,11 @@ class RunConfig:
     holding_period: HoldingPeriodConfig = field(default_factory=lambda: DEFAULT_HOLDING_PERIOD)
     risk_limits: RiskLimits = field(default_factory=lambda: DEFAULT_RISK_LIMITS)
     sector_by_ticker: dict[str, str] = field(default_factory=dict)
+    persona_slug: str | None = None
+    """Investorskills slug (see quorum.personas.curated.CURATED_SLUGS) to
+    apply to the bull/bear researcher debate, or None for upstream's
+    unmodified prompts. Not validated for horizon/asset-class fit here —
+    that's quorum.personas.compatibility's job, run it yourself first."""
 
 
 def run_backtest(config: RunConfig, run_id: str | None = None, debug: bool = False) -> Path:
@@ -48,10 +55,15 @@ def run_backtest(config: RunConfig, run_id: str | None = None, debug: bool = Fal
     run_dir = RESULTS_DIR / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
 
+    persona = None
+    if config.persona_slug is not None:
+        persona = load_persona(config.persona_slug, resolve_source_dir())
+
     engine = DecisionEngine(
         memory_log_path=run_dir / "trading_memory.md",
         holding_period=config.holding_period,
         debug=debug,
+        persona=persona,
     )
     sim = PortfolioSimulator(
         starting_cash=config.starting_cash,
@@ -113,6 +125,7 @@ def _persist(run_dir: Path, config: RunConfig, sim: PortfolioSimulator) -> None:
                 "starting_cash": config.starting_cash,
                 "holding_period": asdict(config.holding_period),
                 "risk_limits": asdict(config.risk_limits),
+                "persona_slug": config.persona_slug,
             },
             indent=2,
         )

@@ -23,6 +23,13 @@ point-in-time safe (a backtest only sees lessons whose outcome had actually
 resolved by that date). We only need to turn it on (``memory_log_path`` in
 config) and call ``settle`` once a ticker's date grid is done, exactly the
 way TradingAgents' own ``tradingagents/backtest.py`` does.
+
+An optional ``persona`` (see ``quorum.personas``) wires an investorskills
+investor framework into the bull/bear researcher debate via
+``quorum.personas.graph.apply_persona`` — a monkeypatch of TradingAgents'
+researcher-node factories, since there's no supported extension point for
+this (see that module's docstring for why). The patch only affects graph
+construction, so it must wrap this constructor, not calls to ``decide``.
 """
 
 from __future__ import annotations
@@ -36,6 +43,8 @@ from tradingagents.default_config import DEFAULT_CONFIG
 from tradingagents.graph.trading_graph import TradingAgentsGraph
 
 from quorum.config import DEFAULT_HOLDING_PERIOD, HoldingPeriodConfig
+from quorum.personas.graph import apply_persona
+from quorum.personas.models import Persona
 
 Action = Literal["buy", "hold", "sell"]
 
@@ -74,6 +83,7 @@ class DecisionEngine:
         debug: bool = False,
         memory_log_path: str | Path | None = "results/quorum_trading_memory.md",
         holding_period: HoldingPeriodConfig = DEFAULT_HOLDING_PERIOD,
+        persona: Persona | None = None,
     ):
         resolved_config = config.copy() if config else DEFAULT_CONFIG.copy()
         if memory_log_path is not None:
@@ -83,7 +93,13 @@ class DecisionEngine:
         # TradingAgents' own 5-day default — a lesson is only meaningful if it
         # was judged over the window we actually trade on.
         resolved_config.setdefault("holding_period_days", holding_period.target_holding_days)
-        self._graph = TradingAgentsGraph(debug=debug, config=resolved_config)
+
+        if persona is not None:
+            with apply_persona(persona):
+                self._graph = TradingAgentsGraph(debug=debug, config=resolved_config)
+        else:
+            self._graph = TradingAgentsGraph(debug=debug, config=resolved_config)
+        self.persona = persona
 
     def settle(self, ticker: str) -> None:
         """Resolve any pending past decisions for ``ticker`` against realized

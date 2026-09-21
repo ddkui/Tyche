@@ -36,6 +36,15 @@ quorum/
                      memory log's reflections
     data.py           Run-loading/scoring logic (QuantStats metrics),
                      kept Streamlit-free so it's independently testable
+  personas/
+    models.py         Parses an investorskills persona (invest.md/SKILL.md)
+    compatibility.py   Filters personas for equities + our holding horizon
+    graph.py           Wires a persona into TradingAgents' bull/bear debate
+    curated.py         The initial supported persona slugs
+    source.py          Pinned investorskills checkout resolution
+  analytics/
+    portfolio_risk.py       Concentration/correlation/tail-risk diagnostics
+    correlation_regime.py   "Is the market broadly fused right now" context
 ```
 
 Third-party pieces this depends on:
@@ -60,13 +69,20 @@ Third-party pieces this depends on:
   of hand-rolling them.
 - **[Streamlit](https://github.com/streamlit/streamlit)** — the dashboard's
   app shell.
-
-Not yet wired in, deliberately:
-
 - **[investorskills](https://github.com/questflowai/investorskills)** —
-  investor-persona prompt library. Would slot in as prompt modules for
-  TradingAgents' analyst/researcher nodes. Optional flavor layer, not
-  infrastructure.
+  investor-persona data, pinned as a git submodule at
+  `quorum/personas/vendor/investorskills` (see "Personas" below) rather
+  than 63 files forked into this repo.
+- **[Vibe-Trading](https://github.com/HKUDS/Vibe-Trading)** (HKUDS) — not
+  used for execution (see the earlier decision to use Alpaca instead —
+  its broker/live-trading code was still fixing margin edge cases weekly
+  at the time we looked). Its non-execution analytics
+  (`agent/backtest/risk_xray.py`, `regime.py`) were adapted, restyled, and
+  trimmed of their broker/multi-market-loader plumbing into
+  `quorum/analytics/` — see that module's docstrings for exactly what was
+  kept vs. dropped, and why the larger alpha-factor zoo there was
+  deliberately *not* adopted (its correctness lives in a registry harness,
+  not in the individual formulas).
 
 ## Memory: agents learning from past outcomes
 
@@ -87,6 +103,49 @@ TradingAgents' own `run_backtest` uses. Read a run's
 `results/runs/<run_id>/trading_memory.md` (or the dashboard's "Agent memory
 log" expander) to see the actual reflections.
 
+## Personas: investor frameworks in the bull/bear debate
+
+`quorum/personas/` lets an investorskills persona (e.g. Darvas Box,
+Minervini VCP) argue the bull/bear researcher roles instead of
+TradingAgents' generic voice — its framework text is prepended to the
+actual prompt sent to the LLM, verified by capturing the constructed
+prompt in tests, not just by checking a Python object got built.
+
+**There is no supported extension point for this in TradingAgents** (read
+directly from its pinned-commit source before writing this): no config
+key, no subclass hook. `quorum/personas/graph.py`'s `apply_persona`
+monkeypatches `tradingagents.graph.setup.create_bull_researcher`/
+`create_bear_researcher` — the exact names `GraphSetup.setup_graph` calls
+— for the duration of building a `TradingAgentsGraph`/`DecisionEngine`.
+This is coupled to the pinned commit in `pyproject.toml`: if that pin
+moves and upstream's bull/bear prompt wording changes, `graph.py`'s copy
+of it needs re-diffing, or the persona silently stops reflecting whatever
+changed.
+
+Only 5 of the 63 investorskills slugs are curated by default
+(`quorum/personas/curated.py`): personas are filtered for `assetClasses`
+containing "public equities" and a `timeHorizon` that overlaps our ~10–20
+trading-day holding window — Buffett's "5-10 years" or Cathie Wood's
+"5-10 years" get excluded, not because they're bad frameworks, but because
+running a multi-year buy-and-hold thesis through a system that exits in
+20 days regardless produces a decision that was never designed to be
+judged on that horizon. `timeHorizon` is free text across the 63 skills
+("days", "days-weeks", "5-10 years", "event-driven", ...) — the parser in
+`quorum/personas/compatibility.py` is an explicit heuristic over prose,
+documented as such, not ground truth.
+
+Use it via:
+
+```python
+from quorum.personas.models import load_persona
+from quorum.personas.source import resolve_source_dir
+
+persona = load_persona("darvas-box", resolve_source_dir())
+engine = DecisionEngine(persona=persona)   # or RunConfig(persona_slug="darvas-box")
+```
+
+or pick one from the dashboard sidebar's "Persona" dropdown.
+
 ## Why there's a `backtest/portfolio.py` at all
 
 TradingAgents ships its own `tradingagents/backtest.py`, but its docstring
@@ -100,10 +159,15 @@ own, which is what `quorum/backtest/portfolio.py` and
 ## Setup
 
 ```bash
+git submodule update --init --recursive   # fetches investorskills for personas
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e .
 cp .env.example .env   # fill in ANTHROPIC_API_KEY at minimum
 ```
+
+Skipping the submodule step is fine — everything except `quorum/personas`
+works without it, and the dashboard's persona dropdown just disables
+itself with a message pointing at the command above.
 
 TradingAgents needs at least one LLM provider key (Anthropic, OpenAI,
 Google, or Bedrock). OpenBB's `yfinance` provider needs no key for a basic
@@ -164,3 +228,19 @@ exit logic is the natural next piece, not yet built.
   `tradingagents.dataflows.sec_edgar` already — `check_filing_not_used_early`
   in our own `validators.py` is for our own pipeline code, not a re-check of
   theirs.
+- **The persona monkeypatch is pinned-commit-specific.** It reimplements
+  (with the persona text prepended) TradingAgents' bull/bear researcher
+  prompt text as of the pinned commit. Bumping the TradingAgents pin
+  without re-diffing `quorum/personas/graph.py` against the new
+  `agents/researchers/{bull,bear}_researcher.py` risks the persona
+  silently going stale against whatever upstream changed.
+- **Persona time-horizon filtering is a heuristic, not ground truth** — see
+  `quorum/personas/compatibility.py`'s own docstring. Treat every curated
+  persona with human judgement at least once before trusting it in a real
+  run, especially any added beyond the initial 5.
+- **`quorum/analytics/` is read-only context, not a gate.** Nothing in
+  `quorum/risk/gate.py` consults `portfolio_risk.py`'s concentration/
+  correlation output or `correlation_regime.py`'s fused/not-fused state —
+  they're diagnostics for a researcher or the dashboard to look at, not
+  enforced limits. Wiring either into the risk gate itself is a real next
+  step, not done here.
