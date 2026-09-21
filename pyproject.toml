@@ -13,6 +13,9 @@ dependencies = [
     "tradingagents @ git+https://github.com/TauricResearch/TradingAgents.git@2d17df8da1536c121e4d7395ac5a5dcec9e96d6f",
     "python-dotenv>=1.0.0",
     "pydantic>=2.0",
+    "alpaca-py>=0.44.0",
+    "quantstats>=0.0.81",
+    "streamlit>=1.64.0",
 ]
 
 [project.optional-dependencies]

@@ -12,16 +12,30 @@ but those are advisory LLM output, not enforced limits. Our own
 ``quorum.risk.gate`` and ``quorum.config`` are the actual authority on
 position size and exit rules — the LLM proposes, the deterministic gate
 disposes.
+
+Memory/learning-from-outcomes is not something we build: TradingAgents
+already ships ``TradingMemoryLog`` + ``Reflector`` (see
+``tradingagents.agents.utils.memory`` / ``tradingagents.graph.reflection``),
+which logs every decision, resolves it against realized/alpha return once
+the holding period has passed, writes a short LLM reflection, and re-injects
+past lessons (same-ticker and cross-ticker) into future prompts — already
+point-in-time safe (a backtest only sees lessons whose outcome had actually
+resolved by that date). We only need to turn it on (``memory_log_path`` in
+config) and call ``settle`` once a ticker's date grid is done, exactly the
+way TradingAgents' own ``tradingagents/backtest.py`` does.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Literal
 
 from tradingagents.agents.utils.rating import RATING_REVIEW
 from tradingagents.default_config import DEFAULT_CONFIG
 from tradingagents.graph.trading_graph import TradingAgentsGraph
+
+from quorum.config import DEFAULT_HOLDING_PERIOD, HoldingPeriodConfig
 
 Action = Literal["buy", "hold", "sell"]
 
@@ -54,8 +68,33 @@ class Decision:
 class DecisionEngine:
     """One TradingAgentsGraph instance, reused across calls for a backtest run."""
 
-    def __init__(self, config: dict | None = None, debug: bool = False):
-        self._graph = TradingAgentsGraph(debug=debug, config=config or DEFAULT_CONFIG.copy())
+    def __init__(
+        self,
+        config: dict | None = None,
+        debug: bool = False,
+        memory_log_path: str | Path | None = "results/quorum_trading_memory.md",
+        holding_period: HoldingPeriodConfig = DEFAULT_HOLDING_PERIOD,
+    ):
+        resolved_config = config.copy() if config else DEFAULT_CONFIG.copy()
+        if memory_log_path is not None:
+            Path(memory_log_path).parent.mkdir(parents=True, exist_ok=True)
+            resolved_config["memory_log_path"] = str(memory_log_path)
+        # Reflections judge the outcome over our actual holding horizon, not
+        # TradingAgents' own 5-day default — a lesson is only meaningful if it
+        # was judged over the window we actually trade on.
+        resolved_config.setdefault("holding_period_days", holding_period.target_holding_days)
+        self._graph = TradingAgentsGraph(debug=debug, config=resolved_config)
+
+    def settle(self, ticker: str) -> None:
+        """Resolve any pending past decisions for ``ticker`` against realized
+        outcomes and write their reflections, before deciding on it again.
+
+        Call this once per ticker after its date grid is done in a backtest
+        (mirrors ``tradingagents.backtest.run_backtest``'s own settlement
+        pass) — otherwise that ticker's last few decisions never get a
+        lesson written and the memory log undersells what actually happened.
+        """
+        self._graph.settle_pending(ticker)
 
     def decide(self, ticker: str, trade_date: str) -> Decision:
         """Run the full analyst -> debate -> trader -> risk -> PM graph once."""
