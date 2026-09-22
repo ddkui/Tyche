@@ -1,0 +1,3 @@
+[submodule "quorum/personas/vendor/investorskills"]
+	path = tyche/personas/vendor/investorskills
+	url = https://github.com/questflowai/investorskills

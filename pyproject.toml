@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tyche"
+version = "0.1.0"
+description = "Tyche: an AI hedge fund research project. Multi-asset architecture, equities first."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "openbb>=4.7.2",
+    "tradingagents @ git+https://github.com/TauricResearch/TradingAgents.git@2d17df8da1536c121e4d7395ac5a5dcec9e96d6f",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0",
+    "alpaca-py>=0.44.0",
+    "quantstats>=0.0.81",
+    "streamlit>=1.64.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.15",
+]
+
+[tool.setuptools.packages.find]
+include = ["tyche*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
