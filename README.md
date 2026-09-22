@@ -182,23 +182,66 @@ It means holding periods, position sizing, and P&L are a layer we have to
 own, which is what `quorum/backtest/portfolio.py` and
 `quorum/risk/gate.py` are.
 
-## Setup
+## Installation
+
+**Prerequisites**: Python 3.11+, `git`, and a C compiler toolchain (some of
+OpenBB's dependencies build from source on less common platforms — if
+`pip install` fails on one of those, install your OS's standard build
+tools and retry).
+
+**1. Clone the repo, including the personas submodule.**
 
 ```bash
-git submodule update --init --recursive   # fetches investorskills for personas
-python3 -m venv .venv && source .venv/bin/activate
-pip install -e .
-cp .env.example .env   # fill in ANTHROPIC_API_KEY at minimum
+git clone --recurse-submodules https://github.com/ddkui/hedgefunding.git
+cd hedgefunding
 ```
 
-Skipping the submodule step is fine — everything except `quorum/personas`
-works without it, and the dashboard's persona dropdown just disables
-itself with a message pointing at the command above.
+Already cloned without `--recurse-submodules`? Fetch it after the fact
+instead of re-cloning:
 
-TradingAgents needs at least one LLM provider key (Anthropic, OpenAI,
-Google, or Bedrock). OpenBB's `yfinance` provider needs no key for a basic
-equities backtest; add `FMP_API_KEY`/`POLYGON_API_KEY` etc. for better
-fundamentals/filings coverage later.
+```bash
+git submodule update --init --recursive
+```
+
+Skipping this entirely is fine — everything except `quorum/personas`
+works without it, and the dashboard's persona dropdown just disables
+itself with a message pointing back at this command.
+
+**2. Create a virtual environment and install the project.**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -e .
+```
+
+This pulls in OpenBB, TradingAgents (pinned to a specific commit via git,
+since it isn't on PyPI), Alpaca's SDK, QuantStats, and Streamlit — expect
+this to take a few minutes and pull a non-trivial amount of disk space.
+
+**3. Configure API keys.**
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env`:
+
+| Variable | Required? | Notes |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | **Yes** (or another provider) | TradingAgents needs at least one LLM provider — Anthropic, OpenAI, Google, or Bedrock. Set `TRADINGAGENTS_LLM_PROVIDER` to match if you use something other than Anthropic. |
+| `FMP_API_KEY`, `POLYGON_API_KEY` | No | OpenBB's `yfinance` provider needs no key for a basic equities backtest; add these later for better fundamentals/filings coverage or higher rate limits. |
+| `ALPACA_API_KEY`, `ALPACA_SECRET_KEY` | No (only for paper trading) | Free at [alpaca.markets](https://alpaca.markets/) — use the **paper** account's keys, not a live account's. `ALPACA_PAPER=true` is enforced in code regardless of what you set here (see "Paper trading" below). |
+
+**4. Verify the install.**
+
+```bash
+python3 -m pytest tests/
+```
+
+This runs entirely against synthetic data and mocked LLM calls — no API
+keys or network access needed for it to pass. If it doesn't pass, nothing
+past this point will work either; fix that first.
 
 **Network policy note**: if you're running this inside a sandboxed
 environment (e.g. Claude Code's web/remote environments), check its egress
