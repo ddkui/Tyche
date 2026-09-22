@@ -8,6 +8,32 @@ tuned for a shorter holding period (swing-trade horizon: days to a couple
 weeks) rather than day-trading or buy-and-hold. Backtesting + Alpaca paper
 trading are wired in; no live execution.
 
+## Status: what's actually been verified
+
+Read this before trusting anything below. Every piece of this project has
+been checked in one of two ways, and it matters which:
+
+- **Verified for real**: code inspected against the actual installed SDKs
+  (OpenBB, alpaca-py, TradingAgents) and tested against synthetic data or
+  mocked LLM calls — including catching and fixing two real bugs this way
+  (a kill-switch that could never trigger, a Streamlit import path issue).
+  This covers essentially everything: the data wrapper, decision engine,
+  portfolio simulator, risk gate, PIT validators, memory wiring, personas,
+  analytics, and the dashboard's rendering.
+- **Not yet run for real, anywhere**: no real market data has ever been
+  pulled, no real LLM call has ever been made, and no real Alpaca order
+  has ever been placed by this code. The sandbox this was built in blocks
+  Yahoo Finance, SEC EDGAR, and Alpaca's API outright (403 at the network
+  proxy), so none of that could be exercised here — only inspected and
+  unit-tested.
+
+**The actual next milestone is not a new feature — it's running this once,
+for real**, somewhere with network access: one real `DecisionEngine.decide()`
+call to see the decision quality and per-call cost, then a small real
+backtest (2-3 tickers, a few months) to see a real equity curve instead of
+a synthetic one. Everything past that (more personas, live execution,
+wiring analytics into the risk gate) should wait until that's happened.
+
 ## Architecture
 
 ```
