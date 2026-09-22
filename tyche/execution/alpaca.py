@@ -6,10 +6,10 @@ review, safety soak period, or slippage/latency validation done for this
 project — turning this into a live connector is a deliberate future step,
 not a config flag.
 
-Every order still passes through ``quorum.risk.gate.RiskGate`` before
+Every order still passes through ``tyche.risk.gate.RiskGate`` before
 submission — a ``Decision`` never reaches the broker directly. Exits are
 not handled here: this project's holding-period/stop-loss/take-profit
-logic lives in ``quorum.backtest.portfolio.PortfolioSimulator`` for
+logic lives in ``tyche.backtest.portfolio.PortfolioSimulator`` for
 backtesting; a live analogue of that (checking open Alpaca positions
 against the same exit rules once a day) is the natural next module, not
 yet built.
@@ -24,9 +24,9 @@ from alpaca.trading.client import TradingClient
 from alpaca.trading.enums import OrderSide, TimeInForce
 from alpaca.trading.requests import MarketOrderRequest
 
-from quorum.config import DEFAULT_RISK_LIMITS, RiskLimits
-from quorum.decision.engine import Decision
-from quorum.risk.gate import RiskGate
+from tyche.config import DEFAULT_RISK_LIMITS, RiskLimits
+from tyche.decision.engine import Decision
+from tyche.risk.gate import RiskGate
 
 
 class NotPaperTradingError(Exception):

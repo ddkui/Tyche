@@ -5,7 +5,7 @@ edge-density number per bar (the fraction of pairs whose |correlation|
 clears a threshold), then run through a hysteresis state machine so the
 regime label doesn't chatter every time the density wobbles across one
 threshold. The output is descriptive context -- e.g. for the analyst step in
-``quorum.decision.engine`` to note "the market has been broadly correlated
+``tyche.decision.engine`` to note "the market has been broadly correlated
 for the last two weeks" -- not a trading signal or a risk-gate input.
 
 Adapted from HKUDS/Vibe-Trading's ``agent/backtest/regime.py`` (MIT
@@ -14,7 +14,7 @@ ported here, restyled to this project's conventions. The original file's
 multi-market symbol inference and live price-fetch plumbing (crypto/HK/A-share
 loader fallback chains) is dropped entirely -- this module is a pure function
 over a returns DataFrame the caller supplies, e.g. built from
-``quorum.data.equities.get_price_history``. Not copied verbatim.
+``tyche.data.equities.get_price_history``. Not copied verbatim.
 """
 
 from __future__ import annotations

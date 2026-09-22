@@ -1,7 +1,7 @@
 """Portfolio-level risk diagnostics: concentration, correlation, and tail risk
 for a weighted equities basket.
 
-``quorum.risk.gate`` caps exposure per name and per declared sector, but a
+``tyche.risk.gate`` caps exposure per name and per declared sector, but a
 sector label can't see co-movement: a regional bank and a rate-sensitive REIT
 sit in different sectors yet can move together, and the sector cap alone
 won't catch that. This module is a read-only lens for a researcher or
@@ -12,7 +12,7 @@ no opinion on what to do about what it finds.
 Adapted from HKUDS/Vibe-Trading's ``agent/backtest/risk_xray.py`` (MIT
 licensed): the concentration/drawdown/historical-VaR/diversification-ratio/
 correlation statistics are ported here, restyled to this project's
-conventions and trimmed to what quorum needs (no JSON-artifact writer, no
+conventions and trimmed to what this project needs (no JSON-artifact writer, no
 runner-specific annualization plumbing). Not copied verbatim.
 """
 
@@ -109,7 +109,7 @@ def _validate_weights(
         if not math.isfinite(value):
             raise ValueError(f"weight for {sym!r} is not finite: {raw!r}")
         if value < 0:
-            # This project is long-only (quorum.backtest.portfolio never
+            # This project is long-only (tyche.backtest.portfolio never
             # opens a short); a negative weight here means a caller error,
             # not a short leg to size correctly.
             raise ValueError(f"weight for {sym!r} is negative ({value}); long-only basket")
@@ -138,7 +138,7 @@ def compute_portfolio_risk(
 
     Args:
         closes: Wide close-price panel, index=date, one column per ticker
-            (e.g. built by joining ``quorum.data.equities.get_price_history``
+            (e.g. built by joining ``tyche.data.equities.get_price_history``
             outputs on their ``close`` columns).
         weights: Ticker -> weight, renormalized to sum 1.0 if it doesn't
             already (a warning is added when that happens). Must be

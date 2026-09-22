@@ -1,12 +1,17 @@
-# Quorum
+# Tyche
 
 An AI hedge fund research project, built on existing open-source tools
-rather than from scratch. Named for the shape of its decision engine: a
-quorum of analyst/researcher/risk/portfolio-manager agents that has to
-agree before a trade happens. Equities-first, multi-asset architecture,
-tuned for a shorter holding period (swing-trade horizon: days to a couple
-weeks) rather than day-trading or buy-and-hold. Backtesting + Alpaca paper
-trading are wired in; no live execution.
+rather than from scratch. Named after Τύχη, the Greek goddess of fortune
+and chance — markets are exactly her domain, and no amount of multi-agent
+debate changes that; see "Status" below for how much of this has actually
+been tested against the real thing. Equities-first, multi-asset
+architecture, tuned for a shorter holding period (swing-trade horizon:
+days to a couple weeks) rather than day-trading or buy-and-hold.
+Backtesting + Alpaca paper trading are wired in; no live execution.
+
+Its decision engine is still, mechanically, a quorum: analyst, researcher,
+risk-manager, and portfolio-manager agents that have to reach agreement
+before a trade happens — see the diagram below.
 
 ## Status: what's actually been verified
 
@@ -64,7 +69,7 @@ The dashed arrow is the part that needed a monkeypatch, not a config
 flag — see "Personas" below for why. The directory layout behind each box:
 
 ```
-quorum/
+tyche/
   config.py       Holding-period + risk-limit defaults (our own layer;
                    upstream has no opinion on either)
   data/
@@ -124,7 +129,7 @@ Third-party pieces this depends on:
   app shell.
 - **[investorskills](https://github.com/questflowai/investorskills)** —
   investor-persona data, pinned as a git submodule at
-  `quorum/personas/vendor/investorskills` (see "Personas" below) rather
+  `tyche/personas/vendor/investorskills` (see "Personas" below) rather
   than 63 files forked into this repo.
 - **[Vibe-Trading](https://github.com/HKUDS/Vibe-Trading)** (HKUDS) — not
   used for execution (see the earlier decision to use Alpaca instead —
@@ -132,7 +137,7 @@ Third-party pieces this depends on:
   at the time we looked). Its non-execution analytics
   (`agent/backtest/risk_xray.py`, `regime.py`) were adapted, restyled, and
   trimmed of their broker/multi-market-loader plumbing into
-  `quorum/analytics/` — see that module's docstrings for exactly what was
+  `tyche/analytics/` — see that module's docstrings for exactly what was
   kept vs. dropped, and why the larger alpha-factor zoo there was
   deliberately *not* adopted (its correctness lives in a registry harness,
   not in the individual formulas).
@@ -149,8 +154,8 @@ into future prompts for the same ticker and across tickers. It's already
 point-in-time safe: a backtest only sees lessons whose outcome had actually
 resolved by that date.
 
-`DecisionEngine` (in `quorum/decision/engine.py`) turns this on by default
-(`memory_log_path`) and exposes `.settle(ticker)`, which `quorum/backtest/
+`DecisionEngine` (in `tyche/decision/engine.py`) turns this on by default
+(`memory_log_path`) and exposes `.settle(ticker)`, which `tyche/backtest/
 runner.py` calls once a ticker's date grid is done — same pattern
 TradingAgents' own `run_backtest` uses. Read a run's
 `results/runs/<run_id>/trading_memory.md` (or the dashboard's "Agent memory
@@ -158,7 +163,7 @@ log" expander) to see the actual reflections.
 
 ## Personas: investor frameworks in the bull/bear debate
 
-`quorum/personas/` lets an investorskills persona (e.g. Darvas Box,
+`tyche/personas/` lets an investorskills persona (e.g. Darvas Box,
 Minervini VCP) argue the bull/bear researcher roles instead of
 TradingAgents' generic voice — its framework text is prepended to the
 actual prompt sent to the LLM, verified by capturing the constructed
@@ -166,7 +171,7 @@ prompt in tests, not just by checking a Python object got built.
 
 **There is no supported extension point for this in TradingAgents** (read
 directly from its pinned-commit source before writing this): no config
-key, no subclass hook. `quorum/personas/graph.py`'s `apply_persona`
+key, no subclass hook. `tyche/personas/graph.py`'s `apply_persona`
 monkeypatches `tradingagents.graph.setup.create_bull_researcher`/
 `create_bear_researcher` — the exact names `GraphSetup.setup_graph` calls
 — for the duration of building a `TradingAgentsGraph`/`DecisionEngine`.
@@ -176,7 +181,7 @@ of it needs re-diffing, or the persona silently stops reflecting whatever
 changed.
 
 Only 5 of the 63 investorskills slugs are curated by default
-(`quorum/personas/curated.py`): personas are filtered for `assetClasses`
+(`tyche/personas/curated.py`): personas are filtered for `assetClasses`
 containing "public equities" and a `timeHorizon` that overlaps our ~10–20
 trading-day holding window — Buffett's "5-10 years" or Cathie Wood's
 "5-10 years" get excluded, not because they're bad frameworks, but because
@@ -184,14 +189,14 @@ running a multi-year buy-and-hold thesis through a system that exits in
 20 days regardless produces a decision that was never designed to be
 judged on that horizon. `timeHorizon` is free text across the 63 skills
 ("days", "days-weeks", "5-10 years", "event-driven", ...) — the parser in
-`quorum/personas/compatibility.py` is an explicit heuristic over prose,
+`tyche/personas/compatibility.py` is an explicit heuristic over prose,
 documented as such, not ground truth.
 
 Use it via:
 
 ```python
-from quorum.personas.models import load_persona
-from quorum.personas.source import resolve_source_dir
+from tyche.personas.models import load_persona
+from tyche.personas.source import resolve_source_dir
 
 persona = load_persona("darvas-box", resolve_source_dir())
 engine = DecisionEngine(persona=persona)   # or RunConfig(persona_slug="darvas-box")
@@ -206,8 +211,8 @@ is explicit: it scores a *rating* against realized/alpha return per
 (ticker, date) cell, and is deliberately not a portfolio simulator — "must
 not grow one," in its own words. That's the right scope for their project.
 It means holding periods, position sizing, and P&L are a layer we have to
-own, which is what `quorum/backtest/portfolio.py` and
-`quorum/risk/gate.py` are.
+own, which is what `tyche/backtest/portfolio.py` and
+`tyche/risk/gate.py` are.
 
 `PortfolioSimulator.run_day` has one ordering detail that isn't obvious
 from reading it top to bottom, and was in fact wrong on the first pass
@@ -249,7 +254,7 @@ instead of re-cloning:
 git submodule update --init --recursive
 ```
 
-Skipping this entirely is fine — everything except `quorum/personas`
+Skipping this entirely is fine — everything except `tyche/personas`
 works without it, and the dashboard's persona dropdown just disables
 itself with a message pointing back at this command.
 
@@ -301,7 +306,7 @@ SDK, but live connectivity has to be checked wherever this actually runs.)
 ### Running the dashboard
 
 ```bash
-streamlit run quorum/dashboard/app.py
+streamlit run tyche/dashboard/app.py
 ```
 
 Configure tickers/date range/holding-period/risk parameters in the
@@ -311,7 +316,7 @@ couple of tickers over a short date range before running anything wide.
 Past runs are listed for comparison (equity curves, QuantStats metrics,
 trade log, and the agent memory log's actual reflections) below.
 
-![Quorum dashboard: run comparison, equity curve, trade log, and the persona picker](docs/screenshots/dashboard.png)
+![Tyche dashboard: run comparison, equity curve, trade log, and the persona picker](docs/screenshots/dashboard.png)
 
 *A real run of this dashboard against synthetic data — the comparison
 table, equity curve, trade log, and persona dropdown are the actual UI,
@@ -319,7 +324,7 @@ not a mockup.*
 
 ### Paper trading (Alpaca)
 
-`quorum/execution/alpaca.py`'s `AlpacaPaperExecutor` refuses to run
+`tyche/execution/alpaca.py`'s `AlpacaPaperExecutor` refuses to run
 against anything but Alpaca's paper endpoint — this is a hard check in the
 constructor, not a config flag you could accidentally flip. Every order
 still goes through the same `RiskGate` the backtester uses. It does not
@@ -352,15 +357,15 @@ exit logic is the natural next piece, not yet built.
 - **The persona monkeypatch is pinned-commit-specific.** It reimplements
   (with the persona text prepended) TradingAgents' bull/bear researcher
   prompt text as of the pinned commit. Bumping the TradingAgents pin
-  without re-diffing `quorum/personas/graph.py` against the new
+  without re-diffing `tyche/personas/graph.py` against the new
   `agents/researchers/{bull,bear}_researcher.py` risks the persona
   silently going stale against whatever upstream changed.
 - **Persona time-horizon filtering is a heuristic, not ground truth** — see
-  `quorum/personas/compatibility.py`'s own docstring. Treat every curated
+  `tyche/personas/compatibility.py`'s own docstring. Treat every curated
   persona with human judgement at least once before trusting it in a real
   run, especially any added beyond the initial 5.
-- **`quorum/analytics/` is read-only context, not a gate.** Nothing in
-  `quorum/risk/gate.py` consults `portfolio_risk.py`'s concentration/
+- **`tyche/analytics/` is read-only context, not a gate.** Nothing in
+  `tyche/risk/gate.py` consults `portfolio_risk.py`'s concentration/
   correlation output or `correlation_regime.py`'s fused/not-fused state —
   they're diagnostics for a researcher or the dashboard to look at, not
   enforced limits. Wiring either into the risk gate itself is a real next

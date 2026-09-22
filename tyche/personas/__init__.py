@@ -1,16 +1,16 @@
 """Optional investor personas layered onto TradingAgents' bull/bear debate.
 
 A persona is one skill from ``questflowai/investorskills`` (a pinned
-external checkout — see ``quorum.personas.source``) parsed into a
+external checkout — see ``tyche.personas.source``) parsed into a
 ``Persona`` and, when compatible with our ~10 trading-day swing-trading
-horizon (``quorum.personas.compatibility``), injectable into the actual
+horizon (``tyche.personas.compatibility``), injectable into the actual
 bull/bear researcher prompts TradingAgents sends to the LLM
-(``quorum.personas.graph.apply_persona``).
+(``tyche.personas.graph.apply_persona``).
 
-Typical use, alongside ``quorum.decision.engine.DecisionEngine``::
+Typical use, alongside ``tyche.decision.engine.DecisionEngine``::
 
-    from quorum.personas import CURATED_SLUGS, apply_persona, load_persona
-    from quorum.decision.engine import DecisionEngine
+    from tyche.personas import CURATED_SLUGS, apply_persona, load_persona
+    from tyche.decision.engine import DecisionEngine
 
     persona = load_persona("darvas-box")
     with apply_persona(persona):
@@ -20,24 +20,24 @@ Typical use, alongside ``quorum.decision.engine.DecisionEngine``::
 
 from __future__ import annotations
 
-from quorum.personas.compatibility import (
+from tyche.personas.compatibility import (
     HorizonEstimate,
     PersonaFit,
     assess,
     filter_compatible,
     parse_time_horizon,
 )
-from quorum.personas.curated import CURATED_SLUGS
-from quorum.personas.graph import apply_persona
-from quorum.personas.models import Persona, list_available_slugs, load_all_personas
-from quorum.personas.models import load_persona as _load_persona_from_dir
-from quorum.personas.prompts import persona_preamble
-from quorum.personas.source import resolve_source_dir
+from tyche.personas.curated import CURATED_SLUGS
+from tyche.personas.graph import apply_persona
+from tyche.personas.models import Persona, list_available_slugs, load_all_personas
+from tyche.personas.models import load_persona as _load_persona_from_dir
+from tyche.personas.prompts import persona_preamble
+from tyche.personas.source import resolve_source_dir
 
 
 def load_persona(slug: str, source_dir: str | None = None) -> Persona:
     """Load one persona by slug, resolving the investorskills checkout the
-    same way :func:`quorum.personas.source.resolve_source_dir` does."""
+    same way :func:`tyche.personas.source.resolve_source_dir` does."""
     return _load_persona_from_dir(slug, resolve_source_dir(source_dir))
 
 

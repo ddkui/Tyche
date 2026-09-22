@@ -1,13 +1,13 @@
-"""Verifies DecisionEngine's own persona wiring (quorum/decision/engine.py),
-distinct from quorum/personas/graph.py's own tests: this checks that passing
+"""Verifies DecisionEngine's own persona wiring (tyche/decision/engine.py),
+distinct from tyche/personas/graph.py's own tests: this checks that passing
 ``persona=`` into DecisionEngine's constructor actually reaches
 apply_persona/TradingAgentsGraph, not just that apply_persona itself works.
 """
 
 from __future__ import annotations
 
-from quorum.decision.engine import DecisionEngine
-from quorum.personas.models import Persona
+from tyche.decision.engine import DecisionEngine
+from tyche.personas.models import Persona
 
 
 def _darvas_persona() -> Persona:

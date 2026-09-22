@@ -40,8 +40,8 @@ from tradingagents.agents.utils.agent_utils import (
     report_or_absent,
 )
 
-from quorum.personas.models import Persona
-from quorum.personas.prompts import persona_preamble
+from tyche.personas.models import Persona
+from tyche.personas.prompts import persona_preamble
 
 
 def _asset_labels(state: dict) -> tuple[str, str]:

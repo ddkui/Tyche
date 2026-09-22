@@ -13,12 +13,12 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 
-from quorum.backtest.portfolio import PortfolioSimulator
-from quorum.config import DEFAULT_HOLDING_PERIOD, DEFAULT_RISK_LIMITS, HoldingPeriodConfig, RiskLimits
-from quorum.data.equities import get_price_history
-from quorum.decision.engine import DecisionEngine
-from quorum.personas.models import load_persona
-from quorum.personas.source import resolve_source_dir
+from tyche.backtest.portfolio import PortfolioSimulator
+from tyche.config import DEFAULT_HOLDING_PERIOD, DEFAULT_RISK_LIMITS, HoldingPeriodConfig, RiskLimits
+from tyche.data.equities import get_price_history
+from tyche.decision.engine import DecisionEngine
+from tyche.personas.models import load_persona
+from tyche.personas.source import resolve_source_dir
 
 RESULTS_DIR = Path("results/runs")
 
@@ -40,10 +40,10 @@ class RunConfig:
     risk_limits: RiskLimits = field(default_factory=lambda: DEFAULT_RISK_LIMITS)
     sector_by_ticker: dict[str, str] = field(default_factory=dict)
     persona_slug: str | None = None
-    """Investorskills slug (see quorum.personas.curated.CURATED_SLUGS) to
+    """Investorskills slug (see tyche.personas.curated.CURATED_SLUGS) to
     apply to the bull/bear researcher debate, or None for upstream's
     unmodified prompts. Not validated for horizon/asset-class fit here —
-    that's quorum.personas.compatibility's job, run it yourself first."""
+    that's tyche.personas.compatibility's job, run it yourself first."""
 
 
 def run_backtest(config: RunConfig, run_id: str | None = None, debug: bool = False) -> Path:

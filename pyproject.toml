@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "quorum"
+name = "tyche"
 version = "0.1.0"
-description = "Quorum: an AI hedge fund research project. Multi-asset architecture, equities first."
+description = "Tyche: an AI hedge fund research project. Multi-asset architecture, equities first."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -26,7 +26,7 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["quorum*"]
+include = ["tyche*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

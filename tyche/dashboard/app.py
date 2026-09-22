@@ -1,10 +1,10 @@
 """Streamlit dashboard: launch backtest runs, compare them, read what the
 agents' memory log actually learned.
 
-Run with: ``streamlit run quorum/dashboard/app.py``
+Run with: ``streamlit run tyche/dashboard/app.py``
 
 Deliberately thin: all the actual logic (running a backtest, scoring a run)
-lives in ``quorum.backtest.runner`` and ``quorum.dashboard.data``, which are
+lives in ``tyche.backtest.runner`` and ``tyche.dashboard.data``, which are
 plain Python and unit-testable without Streamlit. This file is just the UI
 wiring on top of proven libraries (Streamlit for the app shell, QuantStats
 for the metrics) rather than a custom-built dashboard.
@@ -17,16 +17,16 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from quorum.backtest.runner import RunConfig, run_backtest
-from quorum.config import DEFAULT_HOLDING_PERIOD, DEFAULT_RISK_LIMITS, HoldingPeriodConfig, RiskLimits
-from quorum.dashboard.data import compare_runs, list_run_dirs, load_run
-from quorum.personas.curated import CURATED_SLUGS
-from quorum.personas.source import resolve_source_dir
+from tyche.backtest.runner import RunConfig, run_backtest
+from tyche.config import DEFAULT_HOLDING_PERIOD, DEFAULT_RISK_LIMITS, HoldingPeriodConfig, RiskLimits
+from tyche.dashboard.data import compare_runs, list_run_dirs, load_run
+from tyche.personas.curated import CURATED_SLUGS
+from tyche.personas.source import resolve_source_dir
 
 NO_PERSONA = "(none — upstream default prompts)"
 
-st.set_page_config(page_title="Quorum backtests", layout="wide")
-st.title("Quorum — backtest dashboard")
+st.set_page_config(page_title="Tyche backtests", layout="wide")
+st.title("Tyche — backtest dashboard")
 
 with st.sidebar:
     st.header("New backtest run")
@@ -88,7 +88,7 @@ with st.sidebar:
             "Prepends the selected investor's framework (from investorskills) "
             "into TradingAgents' bull/bear researcher prompts. Curated list is "
             "pre-filtered for equities + a swing-trade horizon — see "
-            "quorum/personas/curated.py."
+            "tyche/personas/curated.py."
         ),
     )
 

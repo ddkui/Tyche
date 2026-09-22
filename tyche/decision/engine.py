@@ -9,7 +9,7 @@ decision to do nothing, it's a run that needs a human or a re-run. See
 
 The trader agent also proposes an entry price / stop-loss / position size,
 but those are advisory LLM output, not enforced limits. Our own
-``quorum.risk.gate`` and ``quorum.config`` are the actual authority on
+``tyche.risk.gate`` and ``tyche.config`` are the actual authority on
 position size and exit rules — the LLM proposes, the deterministic gate
 disposes.
 
@@ -24,9 +24,9 @@ resolved by that date). We only need to turn it on (``memory_log_path`` in
 config) and call ``settle`` once a ticker's date grid is done, exactly the
 way TradingAgents' own ``tradingagents/backtest.py`` does.
 
-An optional ``persona`` (see ``quorum.personas``) wires an investorskills
+An optional ``persona`` (see ``tyche.personas``) wires an investorskills
 investor framework into the bull/bear researcher debate via
-``quorum.personas.graph.apply_persona`` — a monkeypatch of TradingAgents'
+``tyche.personas.graph.apply_persona`` — a monkeypatch of TradingAgents'
 researcher-node factories, since there's no supported extension point for
 this (see that module's docstring for why). The patch only affects graph
 construction, so it must wrap this constructor, not calls to ``decide``.
@@ -42,9 +42,9 @@ from tradingagents.agents.utils.rating import RATING_REVIEW
 from tradingagents.default_config import DEFAULT_CONFIG
 from tradingagents.graph.trading_graph import TradingAgentsGraph
 
-from quorum.config import DEFAULT_HOLDING_PERIOD, HoldingPeriodConfig
-from quorum.personas.graph import apply_persona
-from quorum.personas.models import Persona
+from tyche.config import DEFAULT_HOLDING_PERIOD, HoldingPeriodConfig
+from tyche.personas.graph import apply_persona
+from tyche.personas.models import Persona
 
 Action = Literal["buy", "hold", "sell"]
 
@@ -81,7 +81,7 @@ class DecisionEngine:
         self,
         config: dict | None = None,
         debug: bool = False,
-        memory_log_path: str | Path | None = "results/quorum_trading_memory.md",
+        memory_log_path: str | Path | None = "results/tyche_trading_memory.md",
         holding_period: HoldingPeriodConfig = DEFAULT_HOLDING_PERIOD,
         persona: Persona | None = None,
     ):

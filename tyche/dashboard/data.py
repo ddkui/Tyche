@@ -13,7 +13,7 @@ from pathlib import Path
 import pandas as pd
 import quantstats as qs
 
-from quorum.backtest.runner import list_runs
+from tyche.backtest.runner import list_runs
 
 
 @dataclass

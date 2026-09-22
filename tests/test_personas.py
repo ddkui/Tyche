@@ -1,4 +1,4 @@
-"""Tests for quorum.personas: parsing, compatibility filtering, and — the
+"""Tests for tyche.personas: parsing, compatibility filtering, and — the
 bar the task actually cares about — that a selected persona's distinctive
 text really reaches the prompt handed to ``llm.invoke`` inside a
 constructed ``TradingAgentsGraph``, not just that some Python object exists.
@@ -15,17 +15,17 @@ from types import SimpleNamespace
 
 import pytest
 
-from quorum.personas.compatibility import assess, filter_compatible, parse_time_horizon
-from quorum.personas.graph import apply_persona
-from quorum.personas.models import Persona, load_all_personas, load_persona, parse_persona
-from quorum.personas.prompts import persona_preamble
-from quorum.personas.source import resolve_source_dir
+from tyche.personas.compatibility import assess, filter_compatible, parse_time_horizon
+from tyche.personas.graph import apply_persona
+from tyche.personas.models import Persona, load_all_personas, load_persona, parse_persona
+from tyche.personas.prompts import persona_preamble
+from tyche.personas.source import resolve_source_dir
 
 # The scratchpad clone this task was given to read TradingAgents/investorskills
 # source from. Real integration tests below use it when present and skip
 # cleanly (rather than failing) when this repo is checked out somewhere that
 # doesn't have it — e.g. CI, or a future clone with the real submodule set up
-# at quorum/personas/vendor/investorskills instead.
+# at tyche/personas/vendor/investorskills instead.
 _SCRATCHPAD_INVESTORSKILLS = (
     "/tmp/claude-0/-home-user-hedgefunding/586aef10-96ba-571c-b6a0-851ce8f51e35"
     "/scratchpad/research/investorskills"
@@ -159,7 +159,7 @@ Some distinctive prose about consolidation boxes.
 
 
 def test_parse_persona_missing_closing_delimiter_raises():
-    from quorum.personas.models import PersonaParseError
+    from tyche.personas.models import PersonaParseError
 
     with pytest.raises(PersonaParseError):
         parse_persona("bad", "---\nname: x\n", "invest.md")
@@ -190,7 +190,7 @@ def test_load_all_personas_is_best_effort_over_all_63_skills():
 def test_curated_personas_verified_against_real_checkout():
     """Cross-check curated.py's documented fields against the actual files —
     if investorskills changes these upstream, this test is the tripwire."""
-    from quorum.personas.curated import CURATED_SLUGS
+    from tyche.personas.curated import CURATED_SLUGS
 
     source_dir = _real_source_dir()
     expected = {

@@ -4,7 +4,7 @@
 Both files are YAML frontmatter (delimited by ``---`` lines) followed by a
 markdown body. ``invest.md`` (see investorskills' ``docs/spec.md``) carries
 the richer, more structured frontmatter — ``timeHorizon``, ``assetClasses``,
-``style``, etc. — that ``quorum.personas.compatibility`` filters on, so we
+``style``, etc. — that ``tyche.personas.compatibility`` filters on, so we
 prefer it; a skill with only ``SKILL.md`` still has *a* frontmatter (name/
 description) we can build a persona from, just with fewer machine-readable
 fields.
@@ -33,11 +33,11 @@ class Persona:
     style: str
     time_horizon: str
     """Raw free-text horizon (e.g. "days-weeks", "5-10 years") — see
-    ``quorum.personas.compatibility`` for parsing this into a day range."""
+    ``tyche.personas.compatibility`` for parsing this into a day range."""
     asset_classes: list[str] = field(default_factory=list)
     body: str = ""
     """Markdown body (philosophy/signals/filters/analysis prose) — the part
-    injected into agent prompts. See ``quorum.personas.prompts``."""
+    injected into agent prompts. See ``tyche.personas.prompts``."""
     source_file: str = ""
     """"invest.md" or "SKILL.md" — which file supplied the frontmatter."""
 

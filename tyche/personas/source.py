@@ -12,13 +12,13 @@ The natural mechanism for a non-package data dependency pinned to a commit
 is a **git submodule**. That is the recommended, permanent setup:
 
     git submodule add https://github.com/questflowai/investorskills \\
-        quorum/personas/vendor/investorskills
-    git -C quorum/personas/vendor/investorskills checkout {PINNED_COMMIT}
+        tyche/personas/vendor/investorskills
+    git -C tyche/personas/vendor/investorskills checkout {PINNED_COMMIT}
     git submodule update --init --recursive   # after cloning this repo
 
 We do not run ``git submodule add`` from this module: it writes
 ``.gitmodules`` at the repository root, and this persona layer was built
-under an instruction to touch nothing outside ``quorum/personas/``. So for
+under an instruction to touch nothing outside ``tyche/personas/``. So for
 now this file documents the submodule as the intended end state and also
 works standalone: :func:`fetch` clones the pinned commit into the same
 vendor path with plain ``git`` (no submodule bookkeeping), and
@@ -79,7 +79,7 @@ def resolve_source_dir(explicit: str | Path | None = None) -> Path:
     raise FileNotFoundError(
         "No investorskills checkout found (looked at: "
         f"{', '.join(str(c) for c in candidates)}). Fetch it with "
-        f"quorum.personas.source.fetch(), set {_ENV_VAR} to an existing "
+        f"tyche.personas.source.fetch(), set {_ENV_VAR} to an existing "
         f"clone, or run:\n"
         f"  git submodule add {SOURCE_URL} {DEFAULT_VENDOR_DIR}\n"
         f"  git -C {DEFAULT_VENDOR_DIR} checkout {PINNED_COMMIT}"

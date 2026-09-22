@@ -7,7 +7,7 @@ monkeypatch machinery.
 
 from __future__ import annotations
 
-from quorum.personas.models import Persona
+from tyche.personas.models import Persona
 
 # investorskills bodies run a few KB of markdown (philosophy, signals,
 # filters, analysis steps). We cap what we inject so one persona's prose

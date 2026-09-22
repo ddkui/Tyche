@@ -1,6 +1,6 @@
 """Filters investorskills personas for fit with our equities swing-trading
 system (target ~10 trading-day hold, max 20 — see
-``quorum.config.HoldingPeriodConfig``).
+``tyche.config.HoldingPeriodConfig``).
 
 ``timeHorizon`` across the 63 skills is inconsistent free text: "days",
 "days-weeks", "weeks-months", "5-10 years", "months-years", "event-driven",
@@ -18,8 +18,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from quorum.config import DEFAULT_HOLDING_PERIOD, HoldingPeriodConfig
-from quorum.personas.models import Persona
+from tyche.config import DEFAULT_HOLDING_PERIOD, HoldingPeriodConfig
+from tyche.personas.models import Persona
 
 EQUITY_ASSET_CLASS = "public equities"
 

@@ -29,7 +29,7 @@ weren't reviewed carefully enough here to curate with confidence — left out
 rather than included on a guess.
 
 This module is a starting point, not the only allowed set:
-``quorum.personas.compatibility.filter_compatible`` works over the full
+``tyche.personas.compatibility.filter_compatible`` works over the full
 63-skill checkout too.
 """
 
