@@ -1,4 +1,4 @@
-# Tyche
+![Tyche](docs/logo/tyche-banner.png)
 
 An AI hedge fund research project, built on existing open-source tools
 rather than from scratch. Named after Τύχη, the Greek goddess of fortune
