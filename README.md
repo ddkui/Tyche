@@ -36,6 +36,33 @@ wiring analytics into the risk gate) should wait until that's happened.
 
 ## Architecture
 
+What actually happens for one (ticker, date): data flows in, a persona
+(if any) gets spliced into the researcher debate, a decision comes out,
+the risk gate decides whether it becomes an order, and the outcome later
+feeds back into memory for the next run.
+
+```mermaid
+flowchart LR
+    OB[("OpenBB<br/>prices / fundamentals")] -->|prices| AN
+
+    subgraph DE["DecisionEngine (per ticker, date)"]
+        direction TB
+        AN["Analysts<br/>market / social / news / fundamentals"] --> DEB["Bull vs Bear<br/>researcher debate"]
+        PER["Persona preamble<br/>(optional)"] -. "prepended to prompt" .-> DEB
+        DEB --> TR["Trader"] --> RM["Risk Manager"] --> PM["Portfolio Manager"]
+    end
+
+    MEM[("Memory log<br/>past reflections")] -->|past_context| AN
+    PM -->|rating| DEC{{"Decision<br/>buy / hold / sell"}}
+    DEC --> GATE{"Risk Gate<br/>size cap, sector cap,<br/>kill-switch"}
+    GATE -->|approved buy| SIM["Portfolio Simulator<br/>(backtest)"]
+    GATE -->|approved buy| ALP["Alpaca<br/>(paper order)"]
+    SIM -->|realized + alpha return| MEM
+```
+
+The dashed arrow is the part that needed a monkeypatch, not a config
+flag — see "Personas" below for why. The directory layout behind each box:
+
 ```
 quorum/
   config.py       Holding-period + risk-limit defaults (our own layer;
@@ -182,6 +209,25 @@ It means holding periods, position sizing, and P&L are a layer we have to
 own, which is what `quorum/backtest/portfolio.py` and
 `quorum/risk/gate.py` are.
 
+`PortfolioSimulator.run_day` has one ordering detail that isn't obvious
+from reading it top to bottom, and was in fact wrong on the first pass
+(caught by testing, not by inspection): the kill-switch has to compare
+today's mark-to-market equity against *yesterday's closing* equity, not
+against equity computed before/after today's own exits. Comparing within
+the same day meant a stop-loss exit just re-realized the same loss the
+check was trying to detect — it could never actually trigger.
+
+```mermaid
+flowchart TB
+    START(["run_day(date, prices)"]) --> MTM["Mark-to-market equity:<br/>today's prices on<br/>yesterday's positions"]
+    MTM --> KS{"vs. yesterday's<br/>CLOSING equity —<br/>drawdown ≥ threshold?"}
+    KS -->|yes| HALT["Kill switch:<br/>block new entries today"]
+    KS -->|no| EXITS
+    HALT --> EXITS["Process exits<br/>(stop-loss / take-profit /<br/>max holding days)"]
+    EXITS --> ENTRIES["Process entries<br/>(risk-gated buys —<br/>skipped if halted)"]
+    ENTRIES --> RECORD["Record today's closing equity<br/>for tomorrow's comparison"]
+```
+
 ## Installation
 
 **Prerequisites**: Python 3.11+, `git`, and a C compiler toolchain (some of
@@ -264,6 +310,12 @@ TradingAgents graph per ticker (several LLM calls each), so start with a
 couple of tickers over a short date range before running anything wide.
 Past runs are listed for comparison (equity curves, QuantStats metrics,
 trade log, and the agent memory log's actual reflections) below.
+
+![Quorum dashboard: run comparison, equity curve, trade log, and the persona picker](docs/screenshots/dashboard.png)
+
+*A real run of this dashboard against synthetic data — the comparison
+table, equity curve, trade log, and persona dropdown are the actual UI,
+not a mockup.*
 
 ### Paper trading (Alpaca)
 
