@@ -283,6 +283,7 @@ Then edit `.env`:
 | `ANTHROPIC_API_KEY` | **Yes** (or another provider) | TradingAgents needs at least one LLM provider — Anthropic, OpenAI, Google, or Bedrock. Set `TRADINGAGENTS_LLM_PROVIDER` to match if you use something other than Anthropic. |
 | `FMP_API_KEY`, `POLYGON_API_KEY` | No | OpenBB's `yfinance` provider needs no key for a basic equities backtest; add these later for better fundamentals/filings coverage or higher rate limits. |
 | `ALPACA_API_KEY`, `ALPACA_SECRET_KEY` | No (only for paper trading) | Free at [alpaca.markets](https://alpaca.markets/) — use the **paper** account's keys, not a live account's. `ALPACA_PAPER=true` is enforced in code regardless of what you set here (see "Paper trading" below). |
+| `TRADINGAGENTS_LLM_MAX_RETRIES` | No | Using Gemini (`TRADINGAGENTS_LLM_PROVIDER=google`)? Its free tier's RPM limit is easy to hit given how many calls one decision makes. This isn't something we built — TradingAgents' pinned dependency already retries a 429 with exponential backoff (1s→2s→4s...capped at 60s, with jitter), provider-agnostically; the default is 5 attempts, which may not be enough to wait out a tight quota. Raise it (e.g. `10`) rather than the call just failing. See `tests/test_llm_retry_config.py` for the verified mechanics. |
 
 **4. Verify the install.**
 
